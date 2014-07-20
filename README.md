@@ -1,5 +1,7 @@
-Emacs plugin for HackerRank code compile and basic test
--------------------------------------------------------
+Emacs HackerRank
+----------------
+
+###### Emacs plugin for HackerRank code compile and basic test
 
 Add
 
@@ -11,4 +13,8 @@ to your .emacs file
 Restart emacs
 
 
-shortcut fn + f7
+On the top of your code, Add comment in this format
+
+<code> contest: contest-name; challenge: challenge-name; </code>
+
+shortcut f7

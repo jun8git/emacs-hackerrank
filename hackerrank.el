@@ -28,7 +28,7 @@
 (add-to-list 'url-cookie-trusted-urls "https://www\\.hackerrank\\.com/.*")
 
 ;;; Define Functions
-(defun chomp (str)
+(defun hackerrank-chomp (str)
   "Chomp leading and tailing whitespace from STR."
   (replace-regexp-in-string (rx (or (: bos (* (any " \t\n")))
                                    (: (* (any " \t\n")) eos)))
@@ -53,13 +53,13 @@
   (string-match "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" str)
   (setq tmp (match-string 0 str))
   (string-match "[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" tmp 8)
-  (chomp (match-string 0 tmp)))
+  (hackerrank-chomp (match-string 0 tmp)))
 
 (defun hr-get-challenge (str)
   (string-match "challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" str)
   (setq tmp (match-string 0 str))
   (string-match "[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" tmp 10)
-  (chomp (match-string 0 tmp)))
+  (hackerrank-chomp (match-string 0 tmp)))
 
 (defun hr-get-json (bufer)
   (with-current-buffer buffer

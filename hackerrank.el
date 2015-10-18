@@ -32,7 +32,7 @@
 (puthash "sc" "scala" ext-list)
 (puthash "el" "cpp" ext-list)  ;;testing remove this
 
-(defun getLanguage (file) (gethash (file-name-extension file) ext-list))
+(defun get-language (file) (gethash (file-name-extension file) ext-list))
 
 (defun hr-get-first-line (&optional buffer)
   (with-current-buffer (or buffer (current-buffer))
@@ -102,8 +102,8 @@
     (setq hr-challenge (hr-get-challenge hr-trimmed-first-line))
     (setq hackerrank-submission-url
           (concat "https://www.hackerrank.com/rest/contests/" hr-contest "/challenges/" hr-challenge "/compile_tests/"))
-    (hr-make-post-req (list (cons "code" (buffer-string)) (cons "language" (getLanguage buffer-file-name)) '("customtestcase" . "false")))
-    ;;    (hr-make-post-req (list (cons "code" "someting") (cons "language" (getLanguage buffer-file-name)) '("customtestcase" . "false")))
+    (hr-make-post-req (list (cons "code" (buffer-string)) (cons "language" (get-language buffer-file-name)) '("customtestcase" . "false")))
+    ;;    (hr-make-post-req (list (cons "code" "someting") (cons "language" (get-language buffer-file-name)) '("customtestcase" . "false")))
     ))
 
 (global-set-key (kbd "<f7>") '(lambda () (interactive) (hr-main)))

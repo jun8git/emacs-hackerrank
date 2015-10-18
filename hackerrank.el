@@ -23,7 +23,6 @@
 (puthash "py" "python" hackerrank-ext-list)
 (puthash "java" "java" hackerrank-ext-list)
 (puthash "sc" "scala" hackerrank-ext-list)
-(puthash "el" "cpp" hackerrank-ext-list)  ;;testing remove this
 
 ;;; Ensure that hackerrank.com is trusted for cookies
 (add-to-list 'url-cookie-trusted-urls "https://www\\.hackerrank\\.com/.*")

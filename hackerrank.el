@@ -9,33 +9,33 @@
 ;;; Code:
 
 ;;; Define Variables and parameters
-(defvar hackerrank-ext-list (make-hash-table :test 'equal)
+(defvar hr-ext-list (make-hash-table :test 'equal)
   "An extension -- language hash table.")
 
-(defvar hackerrank-submission-url "https://www.hackerrank.com"
+(defvar hr-submission-url "https://www.hackerrank.com"
   "The base url to submit challenges to.")
 
 ;;; Define Extensions and Languages
-(puthash "sh" "bash" hackerrank-ext-list)
-(puthash "c" "c" hackerrank-ext-list)
-(puthash "cpp" "cpp" hackerrank-ext-list)
-(puthash "C" "cpp" hackerrank-ext-list)
-(puthash "py" "python" hackerrank-ext-list)
-(puthash "java" "java" hackerrank-ext-list)
-(puthash "sc" "scala" hackerrank-ext-list)
+(puthash "sh" "bash" hr-ext-list)
+(puthash "c" "c" hr-ext-list)
+(puthash "cpp" "cpp" hr-ext-list)
+(puthash "C" "cpp" hr-ext-list)
+(puthash "py" "python" hr-ext-list)
+(puthash "java" "java" hr-ext-list)
+(puthash "sc" "scala" hr-ext-list)
 
 ;;; Ensure that hackerrank.com is trusted for cookies
 (add-to-list 'url-cookie-trusted-urls "https://www\\.hackerrank\\.com/.*")
 
 ;;; Define Functions
-(defun hackerrank-chomp (str)
+(defun hr-chomp (str)
   "Chomp leading and tailing whitespace from STR."
   (replace-regexp-in-string (rx (or (: bos (* (any " \t\n")))
                                    (: (* (any " \t\n")) eos)))
                             ""
                             str))
 
-(defun get-language (file) (gethash (file-name-extension file) hackerrank-ext-list))
+(defun get-language (file) (gethash (file-name-extension file) hr-ext-list))
 
 (defun hr-get-first-line (&optional buffer)
   (with-current-buffer (or buffer (current-buffer))
@@ -56,13 +56,13 @@
   (string-match "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" str)
   (setq tmp (match-string 0 str))
   (string-match "[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" tmp 8)
-  (hackerrank-chomp (match-string 0 tmp)))
+  (hr-chomp (match-string 0 tmp)))
 
 (defun hr-get-challenge (str)
   (string-match "challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" str)
   (setq tmp (match-string 0 str))
   (string-match "[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" tmp 10)
-  (hackerrank-chomp (match-string 0 tmp)))
+  (hr-chomp (match-string 0 tmp)))
 
 (defun hr-get-json (bufer)
   (with-current-buffer buffer
@@ -82,7 +82,7 @@
   ;; (setq submission_id (cdr (assoc 'id (cdr (assoc 'model (hr-get-json buffer))))))
   (setq url-request-method "GET")
   (sit-for 2)
-  (url-retrieve (concat hackerrank-submission-url (number-to-string submission_id)) 'hr-get-callback))
+  (url-retrieve (concat hr-submission-url (number-to-string submission_id)) 'hr-get-callback))
 
 (defun hr-post-callback (status)
   (setq buffer (current-buffer))
@@ -96,7 +96,7 @@
                                               (url-hexify-string (cdr arg))))
                                     args
                                     "&"))
-  (url-retrieve hackerrank-submission-url 'hr-post-callback))
+  (url-retrieve hr-submission-url 'hr-post-callback))
 
 (defun hr-main ()
   (setq hr-first-line (hr-get-first-line))
@@ -106,7 +106,7 @@
     (setq hr-trimmed-first-line (hr-get-trimmed-first-line hr-first-line))
     (setq hr-contest (hr-get-contest hr-trimmed-first-line))
     (setq hr-challenge (hr-get-challenge hr-trimmed-first-line))
-    (setq hackerrank-submission-url
+    (setq hr-submission-url
           (concat "https://www.hackerrank.com/rest/contests/" hr-contest "/challenges/" hr-challenge "/compile_tests/"))
     (hr-make-post-req (list (cons "code" (buffer-string)) (cons "language" (get-language buffer-file-name)) '("customtestcase" . "false")))
     ;;    (hr-make-post-req (list (cons "code" "someting") (cons "language" (get-language buffer-file-name)) '("customtestcase" . "false")))

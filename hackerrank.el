@@ -1,28 +1,38 @@
-; contest: master; challenge: solve-me-first;
-(setq debug-on-error t)
+;;; hackerrank.el --- Emacs Interface for HackerRank
+;;; contest: master; challenge: solve-me-first;
+
+;;; Commentary:
+;; Provide a way for Emacs Users to interface with HackerRank from
+;; within Emacs.
+
 (require 'json)
-(setq url-cookie-trusted-urls '("https://www\\.hackerrank\\.com/.*"))
-(defvar flag t)
-(defvar hackerrank_submission_url "https://www.hackerrank.com")
+;;; Code:
+
+(defvar ext-list (make-hash-table :test 'equal)
+  "An extension -- language hash table.")
+
+(defvar hackerrank-submission-url "https://www.hackerrank.com")
+
+(add-to-list 'url-cookie-trusted-urls "https://www\\.hackerrank\\.com/.*")
 
 (defun chomp (str)
   "Chomp leading and tailing whitespace from STR."
   (replace-regexp-in-string (rx (or (: bos (* (any " \t\n")))
-                                    (: (* (any " \t\n")) eos)))
+                                   (: (* (any " \t\n")) eos)))
                             ""
                             str))
 
-(setq extList (make-hash-table :test 'equal))
-(puthash "sh" "bash" extList)
-(puthash "c" "c" extList)
-(puthash "cpp" "cpp" extList)
-(puthash "C" "cpp" extList)
-(puthash "py" "python" extList)
-(puthash "java" "java" extList)
-(puthash "sc" "scala" extList)
-(puthash "el" "cpp" extList)  ;;testing remove this
+(setq ext-list (make-hash-table :test 'equal))
+(puthash "sh" "bash" ext-list)
+(puthash "c" "c" ext-list)
+(puthash "cpp" "cpp" ext-list)
+(puthash "C" "cpp" ext-list)
+(puthash "py" "python" ext-list)
+(puthash "java" "java" ext-list)
+(puthash "sc" "scala" ext-list)
+(puthash "el" "cpp" ext-list)  ;;testing remove this
 
-(defun getLanguage (file) (gethash (file-name-extension file) extList))
+(defun getLanguage (file) (gethash (file-name-extension file) ext-list))
 
 (defun hr-get-first-line (&optional buffer)
   (with-current-buffer (or buffer (current-buffer))
@@ -66,7 +76,7 @@
   ;; (setq submission_id (cdr (assoc 'id (cdr (assoc 'model (hr-get-json buffer))))))
   (setq url-request-method "GET")
   (sit-for 2)
-  (url-retrieve (concat hackerrank_submission_url (number-to-string submission_id)) 'hr-get-callback))
+  (url-retrieve (concat hackerrank-submission-url (number-to-string submission_id)) 'hr-get-callback))
 
 (defun hr-post-callback (status)
   (setq buffer (current-buffer))
@@ -80,7 +90,7 @@
                                               (url-hexify-string (cdr arg))))
                                     args
                                     "&"))
-  (url-retrieve hackerrank_submission_url 'hr-post-callback))
+  (url-retrieve hackerrank-submission-url 'hr-post-callback))
 
 (defun hr-main ()
   (setq hr-first-line (hr-get-first-line))
@@ -90,10 +100,14 @@
     (setq hr-trimmed-first-line (hr-get-trimmed-first-line hr-first-line))
     (setq hr-contest (hr-get-contest hr-trimmed-first-line))
     (setq hr-challenge (hr-get-challenge hr-trimmed-first-line))
-    (setq hackerrank_submission_url
+    (setq hackerrank-submission-url
           (concat "https://www.hackerrank.com/rest/contests/" hr-contest "/challenges/" hr-challenge "/compile_tests/"))
     (hr-make-post-req (list (cons "code" (buffer-string)) (cons "language" (getLanguage buffer-file-name)) '("customtestcase" . "false")))
     ;;    (hr-make-post-req (list (cons "code" "someting") (cons "language" (getLanguage buffer-file-name)) '("customtestcase" . "false")))
     ))
 
 (global-set-key (kbd "<f7>") '(lambda () (interactive) (hr-main)))
+
+(provide 'hackerrank)
+
+;;; hackerrank.el ends here

@@ -43,7 +43,10 @@
       (goto-char (point-min))
       (thing-at-point 'line))))
 
-(defun hr-is-first-line-valid (str) (string-match "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;[[:blank:]]*challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;" str))
+(defun hr-is-first-line-valid (str)
+  (string-match
+   "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;[[:blank:]]*challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;"
+   str))
 
 (defun hr-get-trimmed-first-line (str)
   (string-match "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;[[:blank:]]*challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;" str)

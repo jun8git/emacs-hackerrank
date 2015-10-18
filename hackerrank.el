@@ -8,13 +8,27 @@
 (require 'json)
 ;;; Code:
 
-(defvar ext-list (make-hash-table :test 'equal)
+;;; Define Variables and parameters
+(defvar hackerrank-ext-list (make-hash-table :test 'equal)
   "An extension -- language hash table.")
 
-(defvar hackerrank-submission-url "https://www.hackerrank.com")
+(defvar hackerrank-submission-url "https://www.hackerrank.com"
+  "The base url to submit challenges to.")
 
+;;; Define Extensions and Languages
+(puthash "sh" "bash" hackerrank-ext-list)
+(puthash "c" "c" hackerrank-ext-list)
+(puthash "cpp" "cpp" hackerrank-ext-list)
+(puthash "C" "cpp" hackerrank-ext-list)
+(puthash "py" "python" hackerrank-ext-list)
+(puthash "java" "java" hackerrank-ext-list)
+(puthash "sc" "scala" hackerrank-ext-list)
+(puthash "el" "cpp" hackerrank-ext-list)  ;;testing remove this
+
+;;; Ensure that hackerrank.com is trusted for cookies
 (add-to-list 'url-cookie-trusted-urls "https://www\\.hackerrank\\.com/.*")
 
+;;; Define Functions
 (defun chomp (str)
   "Chomp leading and tailing whitespace from STR."
   (replace-regexp-in-string (rx (or (: bos (* (any " \t\n")))
@@ -22,17 +36,7 @@
                             ""
                             str))
 
-(setq ext-list (make-hash-table :test 'equal))
-(puthash "sh" "bash" ext-list)
-(puthash "c" "c" ext-list)
-(puthash "cpp" "cpp" ext-list)
-(puthash "C" "cpp" ext-list)
-(puthash "py" "python" ext-list)
-(puthash "java" "java" ext-list)
-(puthash "sc" "scala" ext-list)
-(puthash "el" "cpp" ext-list)  ;;testing remove this
-
-(defun get-language (file) (gethash (file-name-extension file) ext-list))
+(defun get-language (file) (gethash (file-name-extension file) hackerrank-ext-list))
 
 (defun hr-get-first-line (&optional buffer)
   (with-current-buffer (or buffer (current-buffer))

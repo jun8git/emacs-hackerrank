@@ -71,12 +71,16 @@
   )
 
 (defun hr-get-callback (status)
-  (setq buffer (current-buffer))
-  (setq tmp (hr-get-json buffer))
-  (setq model (cdr (assoc 'model tmp)))
-  (pop-to-buffer (current-buffer))
-  (erase-buffer)
-  (insert (format "%s" (list (assoc 'compilemessage model) (assoc 'stdin model) (assoc 'stderr model) (assoc 'stdout model)))))
+  (let* ((buffer current-buffer)
+         (json (hr-get-json buffer))
+         (model (cdr (assoc 'model json))))
+    (pop-to-buffer (current-buffer))
+    (erase-buffer)
+    (insert
+     (format "%s" (list (assoc 'compilemessage model)
+                        (assoc 'stdin model)
+                        (assoc 'stderr model)
+                        (assoc 'stdout model))))))
 
 (defun hr-send-get (submission_id)
   ;; (setq submission_id (cdr (assoc 'id (cdr (assoc 'model (hr-get-json buffer))))))

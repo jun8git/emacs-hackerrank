@@ -93,14 +93,15 @@
   (hr-send-get (cdr (assoc 'id (cdr (assoc 'model (hr-get-json buffer))))))) ;;check later why error
 
 (defun hr-make-post-req (args)
-  (setq url-request-method "POST")
-  (setq url-request-data (mapconcat (lambda (arg)
-                                      (concat (url-hexify-string (car arg))
-                                              "="
-                                              (url-hexify-string (cdr arg))))
-                                    args
-                                    "&"))
-  (url-retrieve hr-submission-url 'hr-post-callback))
+  (let ((url-request-method "POST")
+        (url-request-data
+         (mapconcat #'(lambda (arg)
+                        (concat (url-hexify-string (car arg))
+                                "="
+                                (url-hexify-string (cdr arg))))
+                    args
+                    "&")))
+    (url-retrieve hr-submission-url 'hr-post-callback)))
 
 (defun hr-main ()
   (interactive)

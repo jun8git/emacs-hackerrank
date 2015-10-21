@@ -1,28 +1,41 @@
-; contest: master; challenge: solve-me-first;
-(setq debug-on-error t)
-(require 'json)
-(setq url-cookie-trusted-urls '("https://www\\.hackerrank\\.com/.*"))
-(defvar flag t)
-(defvar hackerrank_submission_url "https://www.hackerrank.com")
+;;; hackerrank.el --- Emacs Interface for HackerRank
+;;; contest: master; challenge: solve-me-first;
 
-(defun chomp (str)
+;;; Commentary:
+;; Provide a way for Emacs Users to interface with HackerRank from
+;; within Emacs.
+
+(require 'json)
+;;; Code:
+
+;;; Define Variables and parameters
+(defvar hr-ext-list (make-hash-table :test 'equal)
+  "An extension -- language hash table.")
+
+(defvar hr-submission-url "https://www.hackerrank.com"
+  "The base url to submit challenges to.")
+
+;;; Define Extensions and Languages
+(puthash "sh" "bash" hr-ext-list)
+(puthash "c" "c" hr-ext-list)
+(puthash "cpp" "cpp" hr-ext-list)
+(puthash "C" "cpp" hr-ext-list)
+(puthash "py" "python" hr-ext-list)
+(puthash "java" "java" hr-ext-list)
+(puthash "sc" "scala" hr-ext-list)
+
+;;; Ensure that hackerrank.com is trusted for cookies
+(add-to-list 'url-cookie-trusted-urls "https://www\\.hackerrank\\.com/.*")
+
+;;; Define Functions
+(defun hr-chomp (str)
   "Chomp leading and tailing whitespace from STR."
   (replace-regexp-in-string (rx (or (: bos (* (any " \t\n")))
-                                    (: (* (any " \t\n")) eos)))
+                                   (: (* (any " \t\n")) eos)))
                             ""
                             str))
 
-(setq extList (make-hash-table :test 'equal))
-(puthash "sh" "bash" extList)
-(puthash "c" "c" extList)
-(puthash "cpp" "cpp" extList)
-(puthash "C" "cpp" extList)
-(puthash "py" "python" extList)
-(puthash "java" "java" extList)
-(puthash "sc" "scala" extList)
-(puthash "el" "cpp" extList)  ;;testing remove this
-
-(defun getLanguage (file) (gethash (file-name-extension file) extList))
+(defun get-language (file) (gethash (file-name-extension file) hr-ext-list))
 
 (defun hr-get-first-line (&optional buffer)
   (with-current-buffer (or buffer (current-buffer))
@@ -30,7 +43,10 @@
       (goto-char (point-min))
       (thing-at-point 'line))))
 
-(defun hr-is-first-line-valid (str) (string-match "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;[[:blank:]]*challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;" str))
+(defun hr-is-first-line-valid (str)
+  (string-match
+   "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;[[:blank:]]*challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;"
+   str))
 
 (defun hr-get-trimmed-first-line (str)
   (string-match "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;[[:blank:]]*challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*;" str)
@@ -40,13 +56,13 @@
   (string-match "contest:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" str)
   (setq tmp (match-string 0 str))
   (string-match "[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" tmp 8)
-  (chomp (match-string 0 tmp)))
+  (hr-chomp (match-string 0 tmp)))
 
 (defun hr-get-challenge (str)
   (string-match "challenge:[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" str)
   (setq tmp (match-string 0 str))
   (string-match "[[:blank:]]*[-_[:alnum:]]+[[:blank:]]*" tmp 10)
-  (chomp (match-string 0 tmp)))
+  (hr-chomp (match-string 0 tmp)))
 
 (defun hr-get-json (bufer)
   (with-current-buffer buffer
@@ -55,18 +71,22 @@
   )
 
 (defun hr-get-callback (status)
-  (setq buffer (current-buffer))
-  (setq tmp (hr-get-json buffer))
-  (setq model (cdr (assoc 'model tmp)))
-  (pop-to-buffer (current-buffer))
-  (erase-buffer)
-  (insert (format "%s" (list (assoc 'compilemessage model) (assoc 'stdin model) (assoc 'stderr model) (assoc 'stdout model)))))
+  (let* ((buffer current-buffer)
+         (json (hr-get-json buffer))
+         (model (cdr (assoc 'model json))))
+    (pop-to-buffer (current-buffer))
+    (erase-buffer)
+    (insert
+     (format "%s" (list (assoc 'compilemessage model)
+                        (assoc 'stdin model)
+                        (assoc 'stderr model)
+                        (assoc 'stdout model))))))
 
 (defun hr-send-get (submission_id)
   ;; (setq submission_id (cdr (assoc 'id (cdr (assoc 'model (hr-get-json buffer))))))
   (setq url-request-method "GET")
   (sit-for 2)
-  (url-retrieve (concat hackerrank_submission_url (number-to-string submission_id)) 'hr-get-callback))
+  (url-retrieve (concat hr-submission-url (number-to-string submission_id)) 'hr-get-callback))
 
 (defun hr-post-callback (status)
   (setq buffer (current-buffer))
@@ -80,20 +100,22 @@
                                               (url-hexify-string (cdr arg))))
                                     args
                                     "&"))
-  (url-retrieve hackerrank_submission_url 'hr-post-callback))
+  (url-retrieve hr-submission-url 'hr-post-callback))
 
 (defun hr-main ()
-  (setq hr-first-line (hr-get-first-line))
-  (message (concat "Parsing " (hr-get-first-line)))
-  (if (not (hr-is-first-line-valid hr-first-line))
+  (interactive)
+  (let ((hr-first-line (hr-get-first-line)))
+    (message (concat "Parsing " hr-first-line))
+    (when (not (hr-is-first-line-valid hr-first-line))
       (message "Add comment on top your code in this format. contest: <contest-name>; challenge: <challenge-name>; ")
-    (setq hr-trimmed-first-line (hr-get-trimmed-first-line hr-first-line))
-    (setq hr-contest (hr-get-contest hr-trimmed-first-line))
-    (setq hr-challenge (hr-get-challenge hr-trimmed-first-line))
-    (setq hackerrank_submission_url
-          (concat "https://www.hackerrank.com/rest/contests/" hr-contest "/challenges/" hr-challenge "/compile_tests/"))
-    (hr-make-post-req (list (cons "code" (buffer-string)) (cons "language" (getLanguage buffer-file-name)) '("customtestcase" . "false")))
-    ;;    (hr-make-post-req (list (cons "code" "someting") (cons "language" (getLanguage buffer-file-name)) '("customtestcase" . "false")))
-    ))
+      (return))
+    (let* ((hr-trimmed-first-line (hr-get-trimmed-first-line hr-first-line))
+           (hr-contest (hr-get-contest hr-trimmed-first-line))
+           (hr-challenge (hr-get-challenge hr-trimmed-first-line))
+           (hr-submission-url
+            (concat "https://www.hackerrank.com/rest/contests/" hr-contest "/challenges/" hr-challenge "/compile_tests/")))
+      (hr-make-post-req (list (cons "code" (buffer-string)) (cons "language" (get-language buffer-file-name)) '("customtestcase" . "false"))))))
 
-(global-set-key (kbd "<f7>") '(lambda () (interactive) (hr-main)))
+(provide 'hackerrank)
+
+;;; hackerrank.el ends here

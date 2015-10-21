@@ -89,8 +89,10 @@
   (url-retrieve (concat hr-submission-url (number-to-string submission_id)) 'hr-get-callback))
 
 (defun hr-post-callback (status)
-  (setq buffer (current-buffer))
-  (hr-send-get (cdr (assoc 'id (cdr (assoc 'model (hr-get-json buffer))))))) ;;check later why error
+  (let ((buffer (current-buffer)))
+    (hr-send-get
+     (cdr (assoc 'id
+                 (cdr (assoc 'model (hr-get-json buffer))))))))
 
 (defun hr-make-post-req (args)
   (let ((url-request-method "POST")

@@ -103,20 +103,18 @@
   (url-retrieve hr-submission-url 'hr-post-callback))
 
 (defun hr-main ()
-  (setq hr-first-line (hr-get-first-line))
-  (message (concat "Parsing " (hr-get-first-line)))
-  (if (not (hr-is-first-line-valid hr-first-line))
+  (interactive)
+  (let ((hr-first-line (hr-get-first-line)))
+    (message (concat "Parsing " hr-first-line))
+    (when (not (hr-is-first-line-valid hr-first-line))
       (message "Add comment on top your code in this format. contest: <contest-name>; challenge: <challenge-name>; ")
-    (setq hr-trimmed-first-line (hr-get-trimmed-first-line hr-first-line))
-    (setq hr-contest (hr-get-contest hr-trimmed-first-line))
-    (setq hr-challenge (hr-get-challenge hr-trimmed-first-line))
-    (setq hr-submission-url
-          (concat "https://www.hackerrank.com/rest/contests/" hr-contest "/challenges/" hr-challenge "/compile_tests/"))
-    (hr-make-post-req (list (cons "code" (buffer-string)) (cons "language" (get-language buffer-file-name)) '("customtestcase" . "false")))
-    ;;    (hr-make-post-req (list (cons "code" "someting") (cons "language" (get-language buffer-file-name)) '("customtestcase" . "false")))
-    ))
-
-(global-set-key (kbd "<f7>") '(lambda () (interactive) (hr-main)))
+      (return))
+    (let* ((hr-trimmed-first-line (hr-get-trimmed-first-line hr-first-line))
+           (hr-contest (hr-get-contest hr-trimmed-first-line))
+           (hr-challenge (hr-get-challenge hr-trimmed-first-line))
+           (hr-submission-url
+            (concat "https://www.hackerrank.com/rest/contests/" hr-contest "/challenges/" hr-challenge "/compile_tests/")))
+      (hr-make-post-req (list (cons "code" (buffer-string)) (cons "language" (get-language buffer-file-name)) '("customtestcase" . "false"))))))
 
 (provide 'hackerrank)
 
